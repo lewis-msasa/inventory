@@ -1,13 +1,17 @@
 // src/App.tsx
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation } from 'react-router-dom';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChartBar, faClipboardCheck , faBoxesPacking } from '@fortawesome/free-solid-svg-icons'
 import { dummyJobs, dummyProducts, dummyInventory, dummyTransactions } from './data/dummyData';
 import Dashboard from './presentation/dashboard/Dashboard';
 import InventoryList from './presentation/inventory/InventoryList';
 import ProductCatalog from './presentation/inventory/ProductCatalogue';
 import JobList from './presentation/jobs/components/JobList';
 import type { Job, Product, InventoryItem, Transaction } from './types';
+import ProductList from './presentation/inventory/ProductList';
+
+
 
 // Main App Content with routes
 const AppContent: React.FC = () => {
@@ -35,14 +39,12 @@ const AppContent: React.FC = () => {
   };
 
   const navItems = [
-    { path: '/', name: 'Dashboard', icon: '📊' },
-    { path: '/jobs', name: 'Jobs', icon: '📋' },
-    { path: '/inventory', name: 'Inventory', icon: '📦' },
-    { path: '/products', name: 'Products', icon: '🏷️' },
-    { path: '/invoices', name: 'Invoices', icon: '💰' },
-    { path: '/estimates', name: 'Estimates', icon: '📝' },
-    { path: '/price-book', name: 'Price Book', icon: '📚' },
-    { path: '/workers', name: 'Workers', icon: '👥' },
+    { path: '/', name: 'Dashboard', icon: faChartBar },
+    { path: '/jobs', name: 'Jobs', icon: faClipboardCheck },
+    { path: '/inventory', name: 'Inventory', icon: faBoxesPacking },
+    { path: '/products', name: 'Products', icon: faBoxesPacking },
+    { path: '/invoices', name: 'Invoices', icon: faClipboardCheck },
+    
   ];
 
   return (
@@ -50,7 +52,7 @@ const AppContent: React.FC = () => {
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-lg flex flex-col">
         <div className="p-6 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800">My Tofu</h1>
+          <h1 className="text-xl font-bold text-gray-800">My Inventory</h1>
           <p className="text-sm text-gray-500 mt-1">Inventory Management</p>
         </div>
         
@@ -62,11 +64,11 @@ const AppContent: React.FC = () => {
                   to={item.path}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     location.pathname === item.path
-                      ? 'bg-indigo-50 text-indigo-700'
+                      ? 'bg-gray-100 text-gray-700'
                       : 'text-gray-700 hover:bg-gray-100'
                   }`}
                 >
-                  <span className="text-xl">{item.icon}</span>
+                  <span className="text-xl"><FontAwesomeIcon icon={item.icon} /></span>
                   <span className="font-medium">{item.name}</span>
                 </Link>
               </li>
@@ -75,19 +77,9 @@ const AppContent: React.FC = () => {
         </nav>
 
         <div className="p-4 border-t border-gray-200">
-          <div className="bg-gray-50 rounded-lg p-4 mb-4">
-            <h3 className="font-semibold text-sm text-gray-700 mb-2">Run your jobs from the field</h3>
-            <p className="text-xs text-gray-500 mb-3">Plan jobs, assign visits, and manage your team</p>
-            <button className="w-full bg-indigo-600 text-white text-sm py-2 rounded-md hover:bg-indigo-700 mb-2">
-              Download App
-            </button>
-            <button className="w-full text-gray-500 text-xs hover:text-gray-700">
-              Hide
-            </button>
-          </div>
-          
+                   
           <div className="text-xs text-gray-400 text-center">
-            © 2024 My Tofu
+            © 2024 Grip
           </div>
         </div>
       </aside>
@@ -107,7 +99,8 @@ const AppContent: React.FC = () => {
                 transactions={transactions} 
               />
             } />
-            <Route path="/products" element={<ProductCatalog products={products} setProducts={setProducts} />} />
+            <Route path="/products" element={<ProductList products={products} setProducts={setProducts} />} />
+            {/* <Route path="/products" element={<ProductCatalog products={products} setProducts={setProducts} />} /> */}
             <Route path="/invoices" element={<InvoicesPage />} />
             <Route path="/estimates" element={<EstimatesPage />} />
             <Route path="/price-book" element={<PriceBookPage />} />

@@ -121,7 +121,7 @@ const JobList: React.FC<JobListProps> = ({ jobs, setJobs }) => {
           <h2 className="text-2xl font-bold text-gray-800">Jobs</h2>
           <button
             onClick={() => setShowAddJobModal(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
           >
             Create New Job
           </button>

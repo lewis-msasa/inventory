@@ -26,6 +26,7 @@ export interface Expense {
 export interface Product {
   id: string;
   category: string;
+  name?: string;
   brand: string;
   model: string;
   tags: string[];

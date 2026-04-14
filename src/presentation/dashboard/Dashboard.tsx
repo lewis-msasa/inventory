@@ -1,5 +1,7 @@
 // src/components/Dashboard.tsx
 import React from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faChartColumn, faBox, faDollarSign, faBriefcase } from '@fortawesome/free-solid-svg-icons'
 import type { InventoryItem, Transaction, Job } from '../../types';
 
 interface DashboardProps {
@@ -15,10 +17,10 @@ const Dashboard: React.FC<DashboardProps> = ({ inventory, transactions, jobs }) 
   const recentTransactions = [...transactions].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 5);
 
   const stats = [
-    { name: 'Total Inventory Items', value: totalItems, color: 'bg-blue-500' },
-    { name: 'Total Inventory Value', value: `$${totalValue.toFixed(2)}`, color: 'bg-green-500' },
-    { name: 'Active Jobs', value: activeJobs, color: 'bg-purple-500' },
-    { name: 'Total Transactions', value: transactions.length, color: 'bg-orange-500' },
+    { name: 'Total Inventory Items', value: totalItems, color: 'bg-gray-200' },
+    { name: 'Total Inventory Value', value: `$${totalValue.toFixed(2)}`, color: 'bg-gray-200' },
+    { name: 'Active Jobs', value: activeJobs, color: 'bg-gray-200' },
+    { name: 'Total Transactions', value: transactions.length, color: 'bg-gray-200' },
   ];
 
   const statusCounts = {
@@ -34,9 +36,11 @@ const Dashboard: React.FC<DashboardProps> = ({ inventory, transactions, jobs }) 
           <div key={idx} className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
               <div className={`${stat.color} h-12 w-12 rounded-lg flex items-center justify-center text-white text-xl font-bold`}>
-                {stat.name === 'Total Inventory Value' ? '$' : 
-                 stat.name === 'Active Jobs' ? '👔' : 
-                 stat.name === 'Total Transactions' ? '📊' : '📦'}
+                                 {
+                  <FontAwesomeIcon className='text-black/50' icon={stat.name === 'Total Inventory Value' ? faDollarSign : 
+                 stat.name === 'Active Jobs' ? faBriefcase : 
+                 stat.name === 'Total Transactions' ? faChartColumn : faBox} />
+                 }
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">{stat.name}</p>
@@ -57,7 +61,7 @@ const Dashboard: React.FC<DashboardProps> = ({ inventory, transactions, jobs }) 
                 <span>{statusCounts.in_stock} items</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(statusCounts.in_stock / totalItems) * 100}%` }}></div>
+                <div className="bg-gray-500/100 h-2 rounded-full" style={{ width: `${(statusCounts.in_stock / totalItems) * 100}%` }}></div>
               </div>
             </div>
             <div>
@@ -66,7 +70,7 @@ const Dashboard: React.FC<DashboardProps> = ({ inventory, transactions, jobs }) 
                 <span>{statusCounts.reserved} items</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${(statusCounts.reserved / totalItems) * 100}%` }}></div>
+                <div className="bg-gray-500/80 h-2 rounded-full" style={{ width: `${(statusCounts.reserved / totalItems) * 100}%` }}></div>
               </div>
             </div>
             <div>
@@ -75,7 +79,7 @@ const Dashboard: React.FC<DashboardProps> = ({ inventory, transactions, jobs }) 
                 <span>{statusCounts.damaged} items</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div className="bg-red-500 h-2 rounded-full" style={{ width: `${(statusCounts.damaged / totalItems) * 100}%` }}></div>
+                <div className="bg-gray-500/60 h-2 rounded-full" style={{ width: `${(statusCounts.damaged / totalItems) * 100}%` }}></div>
               </div>
             </div>
           </div>

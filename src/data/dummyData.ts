@@ -3,6 +3,46 @@
 import type { Job, Product, InventoryItem, Transaction } from "../types";
 
 
+
+// src/data/dummyData.ts - Add more products to test infinite scroll
+// Add this function to generate more sample products
+const generateMoreProducts = (count: number): Product[] => {
+  const brands = ['Nike', 'Adidas', 'Hoka', 'Saucony', 'Brooks', 'Asics', 'New Balance'];
+  const categories = ['Shoe', 'Apparel', 'Accessory'];
+  const tagsList = ['running', 'trail', 'road', 'casual', 'performance', 'winter', 'summer'];
+  const models = ['Speedster', 'Runner Pro', 'Trail Blazer', 'Road Warrior', 'Comfort Plus'];
+  
+  const products: Product[] = [];
+  
+  for (let i = 1; i <= count; i++) {
+    products.push({
+      id: `p${i}`,
+      name: `${brands[i % brands.length]} ${models[i % models.length]} ${i}`,
+      category: categories[i % categories.length],
+      brand: brands[i % brands.length],
+      model: `${models[i % models.length]} ${i}`,
+      tags: [tagsList[i % tagsList.length], tagsList[(i+1) % tagsList.length]],
+      variants: [
+        {
+          id: `v${i}a`,
+          size: i % 2 === 0 ? 'M' : 'L',
+          color: i % 3 === 0 ? 'Black' : i % 3 === 1 ? 'White' : 'Blue',
+          sku: `SKU-${i}${String.fromCharCode(65 + (i % 26))}`,
+          costPrice: 50 + (i % 100),
+          retailPrice: 100 + (i % 150),
+          barcode: `BAR${String(i).padStart(10, '0')}`,
+          inventoryItems: []
+        }
+      ]
+    });
+  }
+  
+  return products;
+};
+
+
+
+
 export const dummyJobs: Job[] = [
   {
     id: '1',
@@ -123,7 +163,8 @@ export const dummyProducts: Product[] = [
         inventoryItems: []
       }
     ]
-  }
+  },
+  ...generateMoreProducts(25)
 ];
 
 export const dummyInventory: InventoryItem[] = [

@@ -106,7 +106,7 @@ const InventoryList: React.FC<InventoryListProps> = ({ inventory, products, upda
                         setActionType('purchase');
                         setShowModal(true);
                       }}
-                      className="text-indigo-600 hover:text-indigo-900 mr-3"
+                      className="text-gray-800 hover:text-indigo-900 mr-3"
                     >
                       Purchase
                     </button>
@@ -116,7 +116,7 @@ const InventoryList: React.FC<InventoryListProps> = ({ inventory, products, upda
                         setActionType('reserve');
                         setShowModal(true);
                       }}
-                      className="text-yellow-600 hover:text-yellow-900 mr-3"
+                      className="text-gray-600 hover:text-yellow-900 mr-3"
                     >
                       Reserve
                     </button>
@@ -126,7 +126,7 @@ const InventoryList: React.FC<InventoryListProps> = ({ inventory, products, upda
                         setActionType('damaged');
                         setShowModal(true);
                       }}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-gray-400 hover:text-red-900"
                     >
                       Write Off
                     </button>
