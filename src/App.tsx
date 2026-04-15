@@ -6,10 +6,10 @@ import { faChartBar, faClipboardCheck , faBoxesPacking } from '@fortawesome/free
 import { dummyJobs, dummyProducts, dummyInventory, dummyTransactions } from './data/dummyData';
 import Dashboard from './presentation/dashboard/Dashboard';
 import InventoryList from './presentation/inventory/InventoryList';
-import ProductCatalog from './presentation/inventory/ProductCatalogue';
 import JobList from './presentation/jobs/components/JobList';
 import type { Job, Product, InventoryItem, Transaction } from './types';
 import ProductList from './presentation/inventory/ProductList';
+import ProductListPage from './presentation/products/pages/ProductListPage';
 
 
 
@@ -99,7 +99,8 @@ const AppContent: React.FC = () => {
                 transactions={transactions} 
               />
             } />
-            <Route path="/products" element={<ProductList products={products} setProducts={setProducts} />} />
+            {/* <Route path="/products" element={<ProductList products={products} setProducts={setProducts} />} /> */}
+            <Route path="/products" element={<ProductListPage />} />
             {/* <Route path="/products" element={<ProductCatalog products={products} setProducts={setProducts} />} /> */}
             <Route path="/invoices" element={<InvoicesPage />} />
             <Route path="/estimates" element={<EstimatesPage />} />

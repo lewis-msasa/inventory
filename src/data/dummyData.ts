@@ -16,7 +16,7 @@ const generateMoreProducts = (count: number): Product[] => {
   
   for (let i = 1; i <= count; i++) {
     products.push({
-      id: `p${i}`,
+      id: `p-m-${i}`,
       name: `${brands[i % brands.length]} ${models[i % models.length]} ${i}`,
       category: categories[i % categories.length],
       brand: brands[i % brands.length],
