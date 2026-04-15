@@ -1,6 +1,6 @@
 import { inject, injectable } from "inversify";
 import { TYPES } from "../../../di/types";
-import type { ProductDataSource, ProductsQueryParams, ProductsResponse } from "../../../domain/data/products/ProductDataSource";
+import type { CreateOrUpdateProductResponse, ProductDataSource, ProductsQueryParams, ProductsResponse } from "../../../domain/data/products/ProductDataSource";
 import type { ProductRepository } from "../../../domain/repositories/products/productRepository";
 import type { Product } from "../../../types";
 
@@ -18,10 +18,10 @@ export class ProductRepositoryImpl implements ProductRepository{
         return this._dataSource.getProducts(params)
     
     }
-    createProduct(product: Omit<Product, "id">): Promise<Product> {
+    createProduct(product: Omit<Product, "id">): Promise<CreateOrUpdateProductResponse> {
         return this._dataSource.createProduct(product);
     }
-    updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
+    updateProduct(id: string, updates: Partial<Product>): Promise<CreateOrUpdateProductResponse> {
         return this._dataSource.updateProduct(id,updates);
     }
     deleteProduct(id: string): Promise<void> {

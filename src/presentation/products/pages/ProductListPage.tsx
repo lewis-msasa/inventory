@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Product, ProductVariant } from '../../../domain/models/product';
 import { useProductController } from '../hooks/useProductController';
 import { productRepository } from '../../../main';
+import Modal from '../../common/components/Modal';
 
 interface ProductListProps {
   // Props are now mostly handled by the API hook
@@ -12,6 +13,25 @@ interface ProductListProps {
 const ProductListPage: React.FC<ProductListProps> = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  
+const [showAddVariantModal, setShowAddVariantModal] = useState(false);
+const [showAddProductModal, setShowAddProductModal] = useState(false);
+const [newProductForm, setNewProductForm] = useState({
+    name: '',
+    category: '',
+    brand: '',
+    model: '',
+    tags: ''
+  });
+  const [currentProductId, setCurrentProductId] = useState<string>('');
+  const [newVariantForm, setNewVariantForm] = useState({
+    size: '',
+    color: '',
+    sku: '',
+    costPrice: '',
+    retailPrice: '',
+    barcode: ''
+    });
   
   // Filter states
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,7 +52,8 @@ const ProductListPage: React.FC<ProductListProps> = () => {
     refresh,
     isFetching,
     filterOptions,
-    getFilterOptions
+    getFilterOptions,
+    createProduct
   } = useProductController({
     search: searchTerm,
     category: selectedCategory,
@@ -75,31 +96,131 @@ const ProductListPage: React.FC<ProductListProps> = () => {
     };
   }, [products, hasMore, loading, isFetching, loadMore]);
 
+  const openAddVariantModal = (productId: string) => {
+    setCurrentProductId(productId);
+    setNewVariantForm({
+        size: '',
+        color: '',
+        sku: '',
+        costPrice: '',
+        retailPrice: '',
+        barcode: ''
+    });
+    setShowAddVariantModal(true);
+    };
+
+  const addVariant = async () => {
+  // Validate form
+  if (!newVariantForm.size || !newVariantForm.color || !newVariantForm.sku) {
+    alert('Please fill in size, color, and SKU');
+    return;
+  }
+  
+  const product = products.find(p => p.id === currentProductId);
+  if (!product) return;
+  
+  const newVariant: ProductVariant = {
+    id: Date.now().toString(),
+    size: newVariantForm.size,
+    color: newVariantForm.color,
+    sku: newVariantForm.sku,
+    costPrice: parseFloat(newVariantForm.costPrice) || 0,
+    retailPrice: parseFloat(newVariantForm.retailPrice) || 0,
+    barcode: newVariantForm.barcode || `BAR-${Date.now()}`,
+    inventoryItems: []
+  };
+  
+  const updatedVariants = [...product.variants, newVariant];
+  //add variant - update product call
+  refresh();
+  setShowAddVariantModal(false);
+};
+
+
   const addNewProduct = async () => {
+    
+    if (!newProductForm.name || !newProductForm.category || !newProductForm.brand || !newProductForm.model) {
+      alert('Please fill in all required fields');
+      return;
+    }
+    
+    const tagsArray = newProductForm.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    
     const newProduct: Omit<Product, 'id'> = {
-      name: 'New Product',
-      category: 'Shoe',
-      brand: 'New Brand',
-      model: 'New Model',
-      tags: [],
-      variants: []
+      name: newProductForm.name,
+      category: newProductForm.category,
+      brand: newProductForm.brand,
+      model: newProductForm.model,
+      tags: tagsArray,
+      variants: [] // Start with no variants
     };
     
     try {
-      //const created = await productApi.createProduct(newProduct);
-      //setEditingProduct(created);
-      setShowModal(true);
+      await createProduct(newProduct);
+       closeAddProductModal(); 
+       // Reset form
+      setNewProductForm({
+        name: '',
+        category: '',
+        brand: '',
+        model: '',
+        tags: ''
+      });
       refresh(); // Refresh the list
     } catch (err) {
       console.error('Failed to create product:', err);
       alert('Failed to create product');
     }
   };
+   // Function to open add product modal
+  const openAddProductModal = () => {
+    setNewProductForm({
+      name: '',
+      category: '',
+      brand: '',
+      model: '',
+      tags: ''
+    });
+    setShowAddProductModal(true);
+  };
+
+    // Add close handlers
+    const closeAddProductModal = () => {
+        setShowAddProductModal(false);
+        setNewProductForm({
+        name: '',
+        category: '',
+        brand: '',
+        model: '',
+        tags: ''
+        });
+    };
+
+    
+
+    const closeEditProductModal = () => {
+        setShowModal(false);
+        setEditingProduct(null);
+        
+    };
+
+     const closeAddVariantModal = () => {
+        setShowAddVariantModal(false);
+        setCurrentProductId('');
+        setNewVariantForm({
+        size: '',
+        color: '',
+        sku: '',
+        costPrice: '',
+        retailPrice: '',
+        barcode: ''
+        });
+    };
 
   const updateProduct = async (updatedProduct: Product) => {
     try {
       //await productApi.updateProduct(updatedProduct.id, updatedProduct);
-      setShowModal(false);
+       closeEditProductModal();
       setEditingProduct(null);
       refresh(); // Refresh the list
     } catch (err) {
@@ -108,25 +229,7 @@ const ProductListPage: React.FC<ProductListProps> = () => {
     }
   };
 
-  const addVariant = async (productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    
-    const newVariant: ProductVariant = {
-      id: Date.now().toString(),
-      size: 'M',
-      color: 'Black',
-      sku: `SKU-${Date.now()}`,
-      costPrice: 50,
-      retailPrice: 100,
-      barcode: `BAR-${Date.now()}`,
-      inventoryItems: []
-    };
-    
-    const updatedVariants = [...product.variants, newVariant];
-    //await productApi.updateProduct(productId, { variants: updatedVariants });
-    refresh();
-  };
+
 
   const updateVariant = async (productId: string, variantId: string, updates: Partial<ProductVariant>) => {
     const product = products.find(p => p.id === productId);
@@ -187,8 +290,8 @@ const ProductListPage: React.FC<ProductListProps> = () => {
             </p>
           </div>
           <button
-            onClick={addNewProduct}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors"
+            onClick={openAddProductModal} 
+            className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors"
             disabled={loading}
           >
             + Add Product
@@ -444,7 +547,7 @@ const ProductListPage: React.FC<ProductListProps> = () => {
                 </table>
               </div>
               <button
-                onClick={() => addVariant(product.id)}
+                onClick={() => openAddVariantModal(product.id)}
                 className="mt-3 text-indigo-600 hover:text-indigo-800 text-sm font-medium"
               >
                 + Add Variant
@@ -482,75 +585,290 @@ const ProductListPage: React.FC<ProductListProps> = () => {
         )}
       </div>
 
-      {/* Edit Product Modal - Same as before */}
-      {showModal && editingProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-bold mb-4">Edit Product</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Product Name</label>
-                <input
-                  type="text"
-                  value={editingProduct.name || ''}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
-                  className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Category</label>
-                <input
-                  type="text"
-                  value={editingProduct.category}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                  className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Brand</label>
-                <input
-                  type="text"
-                  value={editingProduct.brand}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, brand: e.target.value })}
-                  className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Model</label>
-                <input
-                  type="text"
-                  value={editingProduct.model}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, model: e.target.value })}
-                  className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  value={editingProduct.tags.join(', ')}
-                  onChange={(e) => setEditingProduct({ ...editingProduct, tags: e.target.value.split(',').map(t => t.trim()) })}
-                  className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              </div>
+        {/* Add Product Modal with click outside to close */}
+      <Modal 
+        isOpen={showAddProductModal} 
+        onClose={closeAddProductModal}
+        title="Add New Product"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Product Name <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={newProductForm.name}
+              onChange={(e) => setNewProductForm({ ...newProductForm, name: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., Air Max Running Shoe"
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Category <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={newProductForm.category}
+              onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Select Category</option>
+              {filterOptions.categories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+              <option value="Shoe">Shoe</option>
+              <option value="Apparel">Apparel</option>
+              <option value="Accessory">Accessory</option>
+              <option value="Equipment">Equipment</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Brand <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={newProductForm.brand}
+              onChange={(e) => setNewProductForm({ ...newProductForm, brand: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., Nike, Adidas, Hoka"
+              list="brands-list"
+            />
+            <datalist id="brands-list">
+              {filterOptions.brands.map(brand => (
+                <option key={brand} value={brand} />
+              ))}
+            </datalist>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Model <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={newProductForm.model}
+              onChange={(e) => setNewProductForm({ ...newProductForm, model: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., Air Max 2024, Arahi 8"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Tags (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={newProductForm.tags}
+              onChange={(e) => setNewProductForm({ ...newProductForm, tags: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., running, summer, waterproof"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Separate tags with commas. Example: running, trail, winter
+            </p>
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={closeAddProductModal}
+              className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={addNewProduct}
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+            >
+              Create Product
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Edit Product Modal */}
+      <Modal 
+        isOpen={showModal} 
+        onClose={closeEditProductModal}
+        title="Edit Product"
+      >
+        {editingProduct && (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Product Name</label>
+              <input
+                type="text"
+                value={editingProduct.name || ''}
+                onChange={(e) => setEditingProduct({ ...editingProduct, name: e.target.value })}
+                className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <input
+                type="text"
+                value={editingProduct.category}
+                onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
+                className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Brand</label>
+              <input
+                type="text"
+                value={editingProduct.brand}
+                onChange={(e) => setEditingProduct({ ...editingProduct, brand: e.target.value })}
+                className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Model</label>
+              <input
+                type="text"
+                value={editingProduct.model}
+                onChange={(e) => setEditingProduct({ ...editingProduct, model: e.target.value })}
+                className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Tags (comma-separated)</label>
+              <input
+                type="text"
+                value={editingProduct.tags.join(', ')}
+                onChange={(e) => setEditingProduct({ ...editingProduct, tags: e.target.value.split(',').map(t => t.trim()) })}
+                className="mt-1 block w-full border rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
             </div>
             <div className="flex justify-end space-x-3 mt-6">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={closeEditProductModal}
                 className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
               >
                 Cancel
               </button>
               <button
                 onClick={() => updateProduct(editingProduct)}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+                className="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700"
               >
                 Save
               </button>
             </div>
           </div>
+        )}
+      </Modal>
+
+      {/* Add Variant Modal */}
+      <Modal 
+        isOpen={showAddVariantModal} 
+        onClose={closeAddVariantModal}
+        title="Add New Variant"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Size <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={newVariantForm.size}
+              onChange={(e) => setNewVariantForm({ ...newVariantForm, size: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., S, M, L, XL, 8, 9, 10"
+              autoFocus
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Color <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={newVariantForm.color}
+              onChange={(e) => setNewVariantForm({ ...newVariantForm, color: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., Black, White, Red"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              SKU <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              value={newVariantForm.sku}
+              onChange={(e) => setNewVariantForm({ ...newVariantForm, sku: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="e.g., NIKE-AM-2024-BLK-M"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Cost Price ($)
+            </label>
+            <input
+              type="number"
+              value={newVariantForm.costPrice}
+              onChange={(e) => setNewVariantForm({ ...newVariantForm, costPrice: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Retail Price ($)
+            </label>
+            <input
+              type="number"
+              value={newVariantForm.retailPrice}
+              onChange={(e) => setNewVariantForm({ ...newVariantForm, retailPrice: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Barcode
+            </label>
+            <input
+              type="text"
+              value={newVariantForm.barcode}
+              onChange={(e) => setNewVariantForm({ ...newVariantForm, barcode: e.target.value })}
+              className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+              placeholder="Optional - auto-generated if left blank"
+            />
+          </div>
+
+          <div className="flex justify-end space-x-3 mt-6">
+            <button
+              onClick={closeAddVariantModal}
+              className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={addVariant}
+              className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+            >
+              Add Variant
+            </button>
+          </div>
         </div>
-      )}
+      </Modal>
+
     </div>
   );
 };

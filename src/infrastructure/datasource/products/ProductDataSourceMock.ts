@@ -1,5 +1,5 @@
 import { injectable } from "inversify";
-import type { ProductDataSource, ProductsQueryParams, ProductsResponse } from "../../../domain/data/products/ProductDataSource";
+import type { CreateOrUpdateProductResponse, ProductDataSource, ProductsQueryParams, ProductsResponse } from "../../../domain/data/products/ProductDataSource";
 import type { Product } from "../../../domain/models/product";
 
 @injectable()
@@ -118,22 +118,22 @@ export class ProductDataSourceMock implements ProductDataSource{
       hasMore: params.page < totalPages
     };
     }
-    async createProduct(product: Omit<Product, "id">): Promise<Product> {
+    async createProduct(product: Omit<Product, "id">): Promise<CreateOrUpdateProductResponse> {
            await new Promise(resolve => setTimeout(resolve, 500));
             const newProduct = {
             ...product,
             id: `p${Date.now()}`
             };
             this.mockProducts.unshift(newProduct);
-            return newProduct;
+            return {product: newProduct, successful: true};
     }
-    async updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
+    async updateProduct(id: string, updates: Partial<Product>): Promise<CreateOrUpdateProductResponse> {
        await new Promise(resolve => setTimeout(resolve, 500));
         const index = this.mockProducts.findIndex(p => p.id === id);
         if (index === -1) throw new Error('Product not found');
         
         this.mockProducts[index] = { ...this.mockProducts[index], ...updates };
-        return this.mockProducts[index];
+        return {product: this.mockProducts[index], successful: true};
     }
     async deleteProduct(id: string): Promise<void> {
         await new Promise(resolve => setTimeout(resolve, 500));

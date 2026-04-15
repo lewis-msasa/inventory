@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Product } from '../../../domain/models/product';
 import type { ProductsQueryParams, ProductsResponse } from '../../../domain/data/products/ProductDataSource';
 import type { ProductRepository } from '../../../domain/repositories/products/productRepository';
+import { RequestStatus } from '../../common/hooks/common';
 
 interface UseProductsOptions {
   initialPage?: number;
@@ -42,7 +43,7 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
     sortOrder = 'asc',
     enableInfiniteScroll = true
   } = options;
-
+ 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,29 +52,39 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
   const [page, setPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(1);
   const [isFetching, setIsFetching] = useState(false);
+  const [fetchStatus, setFetchStatus] = useState<RequestStatus>();
+  const [successful, setSuccess] = useState<boolean>(true);
   
   const currentFiltersRef = useRef({ search, category, brand, tag, sortBy, sortOrder });
+   
   const isInitialMount = useRef(true);
 
+  
+  // Update refs when filters change
+  useEffect(() => {
+    currentFiltersRef.current = { search, category, brand, tag, sortBy, sortOrder };
+  }, [search, category, brand, tag, sortBy, sortOrder]);
+
   const fetchProducts = useCallback(async (pageNum: number, append = false) => {
+    
+    console.log("attempt call with ", search, currentFiltersRef.current.search)
     if (isFetching) return;
     
     setIsFetching(true);
     setLoading(true);
     setError(null);
-
+    console.log("call with ", search, currentFiltersRef.current.search)
     try {
       const params: ProductsQueryParams = {
         page: pageNum,
         limit,
-        search: currentFiltersRef.current.search || undefined,
+        search: search || undefined,
         category: currentFiltersRef.current.category !== 'all' ? currentFiltersRef.current.category : undefined,
         brand: currentFiltersRef.current.brand !== 'all' ? currentFiltersRef.current.brand : undefined,
         tag: currentFiltersRef.current.tag !== 'all' ? currentFiltersRef.current.tag : undefined,
         sortBy: currentFiltersRef.current.sortBy,
         sortOrder: currentFiltersRef.current.sortOrder
       };
-
       const response: ProductsResponse = await repo.getProducts(params);
       
       if (append) {
@@ -93,7 +104,9 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
       setLoading(false);
       setIsFetching(false);
     }
-  }, [limit, isFetching]);
+  }, [limit, search,category, brand, tag, sortBy, sortOrder, isFetching]);
+
+  
 
   // Reset and fetch when filters change
   useEffect(() => {
@@ -102,17 +115,12 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
       fetchProducts(1, false);
       return;
     }
-
     // Reset pagination when filters change
     setProducts([]);
     setPage(1);
     fetchProducts(1, false);
   }, [search, category, brand, tag, sortBy, sortOrder]);
 
-  // Update refs when filters change
-  useEffect(() => {
-    currentFiltersRef.current = { search, category, brand, tag, sortBy, sortOrder };
-  }, [search, category, brand, tag, sortBy, sortOrder]);
 
   const loadMore = useCallback(() => {
     if (!enableInfiniteScroll) return;
@@ -138,7 +146,19 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
     setPage(1);
     fetchProducts(1, false);
   }, [fetchProducts]);
-  const createProduct = async () => {
+  const createProduct = async (product: Omit<Product, 'id'>) => {
+     try{
+     setFetchStatus(RequestStatus.Loading)
+     const result = await repo.createProduct(product)
+     setFetchStatus(RequestStatus.Success)
+     setSuccess(result.successful)
+     }
+    catch(err : any){
+         
+         console.log(err)
+         setFetchStatus(RequestStatus.Error)
+    }
+    
 
   }
   
@@ -163,7 +183,10 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
     refresh,
     updateFilters,
     isFetching,
+    fetchStatus,
+    successful,
     getFilterOptions,
-    filterOptions
+    filterOptions,
+    createProduct
   };
 };

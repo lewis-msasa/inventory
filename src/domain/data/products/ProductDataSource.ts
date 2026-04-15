@@ -18,12 +18,16 @@ export interface ProductsQueryParams {
   sortBy?: 'name' | 'brand' | 'model';
   sortOrder?: 'asc' | 'desc';
 }
+export type CreateOrUpdateProductResponse = {
+  product? : Product,
+  successful: boolean
+}
 
 export interface ProductDataSource{
 
     getProducts(params: ProductsQueryParams): Promise<ProductsResponse>
-    createProduct(product: Omit<Product, 'id'>): Promise<Product>
-    updateProduct(id: string, updates: Partial<Product>): Promise<Product>
+    createProduct(product: Omit<Product, 'id'>): Promise<CreateOrUpdateProductResponse>
+    updateProduct(id: string, updates: Partial<Product>): Promise<CreateOrUpdateProductResponse>
     deleteProduct(id: string): Promise<void>
     getProductById(id: string): Promise<Product | null>
     getFilterOptions(): Promise<{
