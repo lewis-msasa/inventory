@@ -174,8 +174,8 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
           {productType === 'existing' ? (
             // Existing Product Form
             <div className="space-y-4">
-                <div className='flex flex-wrap gap-4'>
-                    <div className='flex-1'>
+                <div className='flex-col'>
+                    <div className='mb-8'>
                         <div className=" pt-4 col-span-2">
                          <h4 className="font-medium text-gray-800 mb-3">Product Details</h4>
                        </div>
@@ -196,10 +196,10 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                         </select>
                     </div>
 
-                        
-                    <div className="flex-1">
+                      
+                    <div className="mt-12">
                         <div className=" pt-4 col-span-2">
-                        <h4 className="font-medium text-gray-800 mb-3">Variant Details</h4>
+                           <h4 className="font-medium text-gray-800 mb-3">Variant Details</h4>
                         </div>
 
                         <div>
@@ -317,7 +317,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
           ) : (
             // New Product Form
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-4">
+              <div className="flex-col flex-wrap gap-4">
 
                  <div className="flex-1">
                     <div>
@@ -392,7 +392,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                         </div>
                  </div>
 
-                <div className="flex-1">
+                <div className="flex-1 mt-8">
                     <div className=" pt-4 col-span-2">
                     <h4 className="font-medium text-gray-800 mb-3">Variant Details</h4>
                     </div>
