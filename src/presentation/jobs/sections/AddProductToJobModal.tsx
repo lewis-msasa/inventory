@@ -174,251 +174,337 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
           {productType === 'existing' ? (
             // Existing Product Form
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Select Product <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={selectedProductId}
-                  onChange={(e) => setSelectedProductId(e.target.value)}
-                  className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="">Choose a product...</option>
-                  {existingProducts.map(product => (
-                    <option key={product.id} value={product.id}>
-                      {product.name || `${product.brand} ${product.model}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
+                <div className='flex flex-wrap gap-4'>
+                    <div className='flex-1'>
+                        <div className=" pt-4 col-span-2">
+                         <h4 className="font-medium text-gray-800 mb-3">Product Details</h4>
+                       </div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Select Product <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                        value={selectedProductId}
+                        onChange={(e) => setSelectedProductId(e.target.value)}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                        <option value="">Choose a product...</option>
+                        {existingProducts.map(product => (
+                            <option key={product.id} value={product.id}>
+                            {product.name || `${product.brand} ${product.model}`}
+                            </option>
+                        ))}
+                        </select>
+                    </div>
 
-              {/* {selectedProductId && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Select Variant <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={selectedVariantId}
-                    onChange={(e) => setSelectedVariantId(e.target.value)}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="">Choose a variant...</option>
-                    {variants.map(variant => (
-                      <option key={variant.id} value={variant.id}>
-                        {variant.size} / {variant.color} - SKU: {variant.sku}
-                      </option>
-                    ))}
-                  </select>
+                        
+                    <div className="flex-1">
+                        <div className=" pt-4 col-span-2">
+                        <h4 className="font-medium text-gray-800 mb-3">Variant Details</h4>
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Size <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={newProductForm.size}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, size: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="S, M, L, 8, 9, 10"
+                        />
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Color <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={newProductForm.color}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, color: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Black, White, Red"
+                        />
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            SKU <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={newProductForm.sku}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, sku: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Unique SKU"
+                        />
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Barcode
+                        </label>
+                        <input
+                            type="text"
+                            value={newProductForm.barcode}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, barcode: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Optional"
+                        />
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Cost Price ($)
+                        </label>
+                        <input
+                            type="number"
+                            value={newProductForm.costPrice}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, costPrice: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="0.00"
+                            step="0.01"
+                        />
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Retail Price ($)
+                        </label>
+                        <input
+                            type="number"
+                            value={newProductForm.retailPrice}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, retailPrice: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="0.00"
+                            step="0.01"
+                        />
+                        </div>
+
+                        <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Quantity <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            value={quantity}
+                            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            min="1"
+                        />
+                        </div>
+
+                        <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Notes
+                        </label>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            rows={3}
+                            placeholder="Any special notes about this product..."
+                        />
+                        </div>
+                    </div>
+
                 </div>
-              )} */}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Quantity <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-                  className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  min="1"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  rows={3}
-                  placeholder="Any special notes about this product..."
-                />
-              </div>
+                
+              
             </div>
           ) : (
             // New Product Form
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Product Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newProductForm.name}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, name: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g., Air Max Running Shoe"
-                  />
+              <div className="flex flex-wrap gap-4">
+
+                 <div className="flex-1">
+                    <div>
+                        <div className=" pt-4 col-span-2">
+                         <h4 className="font-medium text-gray-800 mb-3">Product Details</h4>
+                       </div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Product Name <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={newProductForm.name}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, name: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="e.g., Air Max Running Shoe"
+                        />
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Category <span className="text-red-500">*</span>
+                        </label>
+                        <select
+                            value={newProductForm.category}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value="">Select Category</option>
+                            { dummyCategories.map(category => (
+                                <option key={category.id} value={category.value}>{category.name}</option>
+                            ))}
+                        </select>
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Brand <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={newProductForm.brand}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, brand: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="e.g., Nike, Adidas"
+                        />
+                        </div>
+
+                        <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Model <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            value={newProductForm.model}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, model: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="e.g., Air Max 2024"
+                        />
+                        </div>
+
+                        <div className="col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Tags (comma-separated)
+                        </label>
+                        <input
+                            type="text"
+                            value={newProductForm.tags}
+                            onChange={(e) => setNewProductForm({ ...newProductForm, tags: e.target.value })}
+                            className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="running, summer, waterproof"
+                        />
+                        </div>
+                 </div>
+
+                <div className="flex-1">
+                    <div className=" pt-4 col-span-2">
+                    <h4 className="font-medium text-gray-800 mb-3">Variant Details</h4>
+                    </div>
+
+                    <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Size <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        value={newProductForm.size}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, size: e.target.value })}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="S, M, L, 8, 9, 10"
+                    />
+                    </div>
+
+                    <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Color <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        value={newProductForm.color}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, color: e.target.value })}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Black, White, Red"
+                    />
+                    </div>
+
+                    <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        SKU <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        value={newProductForm.sku}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, sku: e.target.value })}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Unique SKU"
+                    />
+                    </div>
+
+                    <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Barcode
+                    </label>
+                    <input
+                        type="text"
+                        value={newProductForm.barcode}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, barcode: e.target.value })}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="Optional"
+                    />
+                    </div>
+
+                    <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Cost Price ($)
+                    </label>
+                    <input
+                        type="number"
+                        value={newProductForm.costPrice}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, costPrice: e.target.value })}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="0.00"
+                        step="0.01"
+                    />
+                    </div>
+
+                    <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Retail Price ($)
+                    </label>
+                    <input
+                        type="number"
+                        value={newProductForm.retailPrice}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, retailPrice: e.target.value })}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        placeholder="0.00"
+                        step="0.01"
+                    />
+                    </div>
+
+                    <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Quantity <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        min="1"
+                    />
+                    </div>
+
+                    <div className="col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Notes
+                    </label>
+                    <textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        rows={3}
+                        placeholder="Any special notes about this product..."
+                    />
+                    </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    value={newProductForm.category}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  >
-                    <option value="">Select Category</option>
-                    { dummyCategories.map(category => (
-                          <option key={category.id} value={category.value}>{category.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Brand <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newProductForm.brand}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, brand: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g., Nike, Adidas"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Model <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newProductForm.model}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, model: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="e.g., Air Max 2024"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tags (comma-separated)
-                  </label>
-                  <input
-                    type="text"
-                    value={newProductForm.tags}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, tags: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="running, summer, waterproof"
-                  />
-                </div>
-
-                {/* <div className="border-t pt-4 col-span-2">
-                  <h4 className="font-medium text-gray-800 mb-3">Variant Details</h4>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Size <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newProductForm.size}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, size: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="S, M, L, 8, 9, 10"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Color <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newProductForm.color}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, color: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Black, White, Red"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    SKU <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newProductForm.sku}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, sku: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Unique SKU"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Barcode
-                  </label>
-                  <input
-                    type="text"
-                    value={newProductForm.barcode}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, barcode: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Optional"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cost Price ($)
-                  </label>
-                  <input
-                    type="number"
-                    value={newProductForm.costPrice}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, costPrice: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="0.00"
-                    step="0.01"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Retail Price ($)
-                  </label>
-                  <input
-                    type="number"
-                    value={newProductForm.retailPrice}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, retailPrice: e.target.value })}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="0.00"
-                    step="0.01"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Quantity <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 0))}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    min="1"
-                  />
-                </div>
-
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Notes
-                  </label>
-                  <textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                    className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
-                    rows={3}
-                    placeholder="Any special notes about this product..."
-                  />
-                </div> */}
+                
               </div>
             </div>
           )}

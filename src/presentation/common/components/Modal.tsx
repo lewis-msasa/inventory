@@ -39,8 +39,9 @@ const Modal: React.FC<{
   if (!isOpen) return null;
 
   return (
+    // max-w-md
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div ref={modalRef} className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div ref={modalRef} className="bg-white rounded-lg p-64 w-full max-h-[90vh] overflow-y-auto">
         {title && (
           <div className="px-6 py-4 border-b border-gray-200">
             <h3 className="text-xl font-bold text-gray-800">{title}</h3>
