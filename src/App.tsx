@@ -7,9 +7,10 @@ import { dummyJobs, dummyProducts, dummyInventory, dummyTransactions } from './d
 import Dashboard from './presentation/dashboard/Dashboard';
 import InventoryList from './presentation/inventory/InventoryList';
 import JobList from './presentation/jobs/components/JobList';
-import type { Job, Product, InventoryItem, Transaction } from './types';
+import type { Job, Product, InventoryItem, Transaction, JobProduct } from './types';
 import ProductList from './presentation/inventory/ProductList';
 import ProductListPage from './presentation/products/pages/ProductListPage';
+import JobListPage from './presentation/jobs/pages/JobListPage';
 
 
 
@@ -46,6 +47,51 @@ const AppContent: React.FC = () => {
     { path: '/invoices', name: 'Invoices', icon: faClipboardCheck },
     
   ];
+
+
+
+  // src/App.tsx - Add this function to handle adding from jobs
+
+const addToInventoryFromJob = async (jobProduct: JobProduct, batchNumber: string, warehouse: string) => {
+  // Check if inventory item already exists
+  const existingItem = inventory.find(
+    item => item.variantId === jobProduct.variantId && 
+    item.batchNumber === batchNumber
+  );
+  
+  if (existingItem) {
+    // Update existing inventory item
+    existingItem.quantity += jobProduct.quantity;
+    existingItem.updatedAt = new Date();
+    setInventory([...inventory]);
+  } else {
+    // Create new inventory item
+    const newInventoryItem: InventoryItem = {
+      id: Date.now().toString(),
+      variantId: jobProduct.variantId!,
+      batchNumber: batchNumber,
+      warehouse: warehouse,
+      quantity: jobProduct.quantity,
+      status: 'in_stock',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    setInventory([...inventory, newInventoryItem]);
+  }
+  
+  // Create transaction record
+  const transaction: Transaction = {
+    id: Date.now().toString(),
+    type: 'purchase',
+    variantId: jobProduct.variantId!,
+    quantity: jobProduct.quantity,
+    batchNumber: batchNumber,
+    date: new Date(),
+    notes: `Added from job batch ${batchNumber}`
+  };
+  setTransactions([...transactions, transaction]);
+};
+
 
   return (
     <div className="flex h-screen bg-gray-100">
@@ -89,7 +135,12 @@ const AppContent: React.FC = () => {
         <div className="max-w-7xl mx-auto py-6 px-8">
           <Routes>
             <Route path="/" element={<Dashboard inventory={inventory} transactions={transactions} jobs={jobs} />} />
-            <Route path="/jobs" element={<JobList jobs={jobs} setJobs={setJobs} />} />
+            {/* <Route path="/jobs" element={<JobList jobs={jobs} setJobs={setJobs} />} /> */}
+            
+            <Route path="/jobs" element={
+              <JobListPage />
+            } />
+
             <Route path="/inventory" element={
               <InventoryList 
                 inventory={inventory} 

@@ -1,5 +1,5 @@
 // src/components/ProductList.tsx
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { Product, ProductVariant } from '../../../domain/models/product';
 import { useProductController } from '../hooks/useProductController';
 import { productRepository } from '../../../main';

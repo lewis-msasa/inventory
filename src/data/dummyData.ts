@@ -50,6 +50,7 @@ export const dummyJobs: Job[] = [
     name: 'Summer Collection Intake',
     status: 'in_progress',
     createdAt: new Date('2024-01-15'),
+    products: [],
     subtasks: [
       {
         id: '101',
@@ -82,6 +83,7 @@ export const dummyJobs: Job[] = [
     name: 'Winter Gear Intake',
     status: 'pending',
     createdAt: new Date('2024-01-20'),
+    products: [],
     subtasks: [
       {
         id: '201',
