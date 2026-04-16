@@ -1,6 +1,6 @@
 // src/components/JobList.tsx
 import React, { useState } from 'react';
-import type { Job, Subtask, Expense, JobProduct, Product } from '../../../types';
+import type { Job, Subtask, Expense, JobProduct, Product, ProductVariant } from '../../../types';
 import AddProductToJobModal from '../sections/AddProductToJobModal';
 import QualityAssessmentModal from '../sections/QualityAssessmentModal';
 
@@ -167,11 +167,31 @@ const JobList: React.FC<JobListProps> = ({
           // Refresh products list
           //const updatedProducts = await productApi.getProducts({ page: 1, limit: 100 });
           //setProducts(updatedProducts.products);
-          //setProducts([...products,])
+          if(newJobProduct.newProduct != null && newJobProduct.newProduct != undefined){
+           setProducts([...products, {...newJobProduct.newProduct as Product}])
+          }
         } catch (error) {
           console.error('Failed to create product:', error);
           alert('Failed to create product');
           return;
+        }
+      }
+      else{
+         // Create the variant
+          const newVariant = {
+            ...jobProduct.newVariant,
+            id: Date.now().toString()
+          };
+         const product = products.find(p => p.id === newJobProduct.productId);
+         // Update the job product with the new IDs
+          newJobProduct.productId = product?.id;
+          newJobProduct.variantId = newVariant.id;
+          delete newJobProduct.newProduct;
+          delete newJobProduct.newVariant;
+        if(product != null){
+         product.variants = [...product.variants, {...newVariant as ProductVariant}]
+         console.log(product.variants)
+         setProducts([...products, {...product}])
         }
       }
   
@@ -371,6 +391,8 @@ const JobList: React.FC<JobListProps> = ({
                       {job.products.map(jp => {
                         const product = products.find(p => p.id === jp.productId);
                         const variant = product?.variants.find(v => v.id === jp.variantId);
+                        console.log(jp)
+                        console.log(product)
                         const hasQualityCheck = !!jp.qualityCheck;
                         const passed = jp.qualityCheck?.passed || 0;
                         const failed = jp.qualityCheck?.failed || 0;
