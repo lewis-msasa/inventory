@@ -166,7 +166,8 @@ const JobList: React.FC<JobListProps> = ({
           
           // Refresh products list
           //const updatedProducts = await productApi.getProducts({ page: 1, limit: 100 });
-         // setProducts(updatedProducts.products);
+          //setProducts(updatedProducts.products);
+          //setProducts([...products,])
         } catch (error) {
           console.error('Failed to create product:', error);
           alert('Failed to create product');
