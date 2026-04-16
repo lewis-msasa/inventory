@@ -52,23 +52,23 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
 
   const handleSubmit = () => {
     if (productType === 'existing') {
-      if (!selectedProductId || !selectedVariantId || quantity <= 0) {
+      if (!selectedProductId || quantity <= 0) {
         alert('Please select product, variant, and quantity');
         return;
       }
       
       onAddProduct({
         productId: selectedProductId,
-        variantId: selectedVariantId,
-        // newVariant: {
-        //   size: newProductForm.size,
-        //   color: newProductForm.color,
-        //   sku: newProductForm.sku,
-        //   costPrice: parseFloat(newProductForm.costPrice) || 0,
-        //   retailPrice: parseFloat(newProductForm.retailPrice) || 0,
-        //   barcode: newProductForm.barcode || `BAR-${Date.now()}`,
-        //   inventoryItems: []
-        // },
+       /// variantId: selectedVariantId,
+        newVariant: {
+          size: newProductForm.size,
+          color: newProductForm.color,
+          sku: newProductForm.sku,
+          costPrice: parseFloat(newProductForm.costPrice) || 0,
+          retailPrice: parseFloat(newProductForm.retailPrice) || 0,
+          barcode: newProductForm.barcode || `BAR-${Date.now()}`,
+          inventoryItems: []
+        },
         quantity,
         status: 'pending',
         notes
