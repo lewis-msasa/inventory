@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import type { JobProduct } from '../../../types';
+import Modal from '../../common/components/Modal';
 
 interface QualityAssessmentModalProps {
   isOpen: boolean;
@@ -50,12 +51,14 @@ const QualityAssessmentModal: React.FC<QualityAssessmentModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800">Quality Assessment</h3>
-        </div>
-        
+    
+
+        <Modal 
+            isOpen={isOpen} 
+            onClose={onClose}
+            title="Quality Assessment"
+        >
+            
         <div className="p-6">
           <div className="mb-4">
             <p className="text-sm text-gray-600">Product:</p>
@@ -172,8 +175,8 @@ const QualityAssessmentModal: React.FC<QualityAssessmentModalProps> = ({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+        </Modal>
+        
   );
 };
 

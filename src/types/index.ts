@@ -1,4 +1,8 @@
-
+export interface ProductCategory{
+  id: string,
+  name: string;
+  value: string
+}
 
 export interface Subtask {
   id: string;

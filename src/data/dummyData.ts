@@ -1,6 +1,6 @@
 // src/data/dummyData.ts
 
-import type { Job, Product, InventoryItem, Transaction } from "../types";
+import type { Job, Product, InventoryItem, Transaction, ProductCategory } from "../types";
 
 
 
@@ -106,6 +106,19 @@ export const dummyJobs: Job[] = [
     ]
   }
 ];
+
+export const dummyCategories: ProductCategory[] = [
+  {
+    id: 'pc1',
+    name: 'Shoes',
+    value: 'shoes'
+  },
+  {
+    id: 'pc2',
+    name: 'Apparel',
+    value: 'apparel'
+  },
+]
 
 export const dummyProducts: Product[] = [
   {

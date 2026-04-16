@@ -1,6 +1,8 @@
 // src/components/AddProductToJobModal.tsx
 import React, { useState, useEffect } from 'react';
 import type { JobProduct, Product, ProductVariant } from '../../../types';
+import Modal from '../../common/components/Modal';
+import { dummyCategories } from '../../../data/dummyData';
 
 
 interface AddProductToJobModalProps {
@@ -126,12 +128,13 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800">Add Product to Job</h3>
-        </div>
-        
+    
+
+        <Modal 
+            isOpen={isOpen} 
+            onClose={ () => {onClose(); setProductType('existing')}}
+            title="Add Product to Job"
+        >
         <div className="p-6">
           {/* Product Type Toggle */}
           <div className="mb-6">
@@ -180,7 +183,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                 </select>
               </div>
 
-              {selectedProductId && (
+              {/* {selectedProductId && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Select Variant <span className="text-red-500">*</span>
@@ -198,7 +201,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                     ))}
                   </select>
                 </div>
-              )}
+              )} */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -253,10 +256,9 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                     className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
                   >
                     <option value="">Select Category</option>
-                    <option value="Shoe">Shoe</option>
-                    <option value="Apparel">Apparel</option>
-                    <option value="Accessory">Accessory</option>
-                    <option value="Equipment">Equipment</option>
+                    { dummyCategories.map(category => (
+                          <option key={category.id} value={category.value}>{category.name}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -299,7 +301,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                   />
                 </div>
 
-                <div className="border-t pt-4 col-span-2">
+                {/* <div className="border-t pt-4 col-span-2">
                   <h4 className="font-medium text-gray-800 mb-3">Variant Details</h4>
                 </div>
 
@@ -407,7 +409,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                     rows={3}
                     placeholder="Any special notes about this product..."
                   />
-                </div>
+                </div> */}
               </div>
             </div>
           )}
@@ -430,8 +432,8 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
             </button>
           </div>
         </div>
-      </div>
-    </div>
+      </Modal>
+        
   );
 };
 
