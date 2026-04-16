@@ -60,6 +60,15 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
       onAddProduct({
         productId: selectedProductId,
         variantId: selectedVariantId,
+        // newVariant: {
+        //   size: newProductForm.size,
+        //   color: newProductForm.color,
+        //   sku: newProductForm.sku,
+        //   costPrice: parseFloat(newProductForm.costPrice) || 0,
+        //   retailPrice: parseFloat(newProductForm.retailPrice) || 0,
+        //   barcode: newProductForm.barcode || `BAR-${Date.now()}`,
+        //   inventoryItems: []
+        // },
         quantity,
         status: 'pending',
         notes
