@@ -26,6 +26,8 @@ export interface JobProduct {
   variantId?: string;
   newVariant?: Omit<ProductVariant, 'id'>;
   quantity: number;
+  variantCost: number;
+  variantRetailCost: number;
   status: 'pending' | 'in_inventory' | 'damaged' | 'discarded';
   qualityCheck?: {
     passed: number;        // Quantity that passed quality check
@@ -73,23 +75,6 @@ export interface InventoryEntry {
   createdAt: Date;
   status: 'active' | 'damaged' | 'sold';
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

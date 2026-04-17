@@ -129,9 +129,11 @@ const JobList: React.FC<JobListProps> = ({
   };
 
   const getTotalExpenses = (job: Job) => {
-    return job.subtasks.reduce((total, subtask) => 
+    const retailProductCost = job.products.reduce((total, jp) => total + jp.variantRetailCost,0)
+    const taskCosts = job.subtasks.reduce((total, subtask) => 
       total + subtask.expenses.reduce((sum, expense) => sum + expense.amount, 0), 0
     );
+    return retailProductCost + taskCosts
   };
 
   const addProductToJob = async (jobProduct: Omit<JobProduct, 'id'>) => {
@@ -142,12 +144,40 @@ const JobList: React.FC<JobListProps> = ({
         id: Date.now().toString(),
         ...jobProduct
       };
-  
-      // If it's a new product, create it first
-      if (jobProduct.newProduct && jobProduct.newVariant) {
+      //case 1: exisiting product, existing variant
+      if(jobProduct.productId && jobProduct.variantId){
+        const product = products.find(p => p.id == jobProduct.productId);
+        if(!product) return;
+        const variant = product.variants.find(v => v.id == jobProduct.variantId)
+        if(!variant) return;
+        newJobProduct.productId = product?.id;
+        newJobProduct.variantId = variant.id;
+        delete newJobProduct.newProduct;
+        delete newJobProduct.newVariant;
+
+      }
+      //case 2: existing product, new variant
+      else if(jobProduct.productId && jobProduct.newVariant){
+         const product = products.find(p => p.id == jobProduct.productId);
+         if(!product) return;
+         const newVariant = {
+            ...jobProduct.newVariant,
+            id: Date.now().toString()
+          };
+          newJobProduct.productId = product?.id;
+          newJobProduct.variantId = newVariant.id;
+          delete newJobProduct.newProduct;
+          delete newJobProduct.newVariant;
+          product.variants = [...product.variants, {...newVariant as ProductVariant}]
+          setProducts([...products, {...product}])
+
+          //we need to save the variant into the database
+        
+      }
+      //case 3: new product, new variant
+      else if (jobProduct.newProduct && jobProduct.newVariant){
         try {
-          // Create the product
-          //const createdProduct = await productApi.createProduct(jobProduct.newProduct);
+          // Create the product and save in the DB
           
           // Create the variant
           const newVariant = {
@@ -156,7 +186,7 @@ const JobList: React.FC<JobListProps> = ({
           };
           
           const updatedVariants = [...jobProduct.newProduct.variants, newVariant];
-         // await productApi.updateProduct(createdProduct.id, { variants: updatedVariants });
+          // save variant in the DB
           
           // Update the job product with the new IDs
           newJobProduct.productId = jobProduct.newProduct.name;
@@ -177,22 +207,7 @@ const JobList: React.FC<JobListProps> = ({
         }
       }
       else{
-         // Create the variant
-          const newVariant = {
-            ...jobProduct.newVariant,
-            id: Date.now().toString()
-          };
-         const product = products.find(p => p.id === newJobProduct.productId);
-         // Update the job product with the new IDs
-          newJobProduct.productId = product?.id;
-          newJobProduct.variantId = newVariant.id;
-          delete newJobProduct.newProduct;
-          delete newJobProduct.newVariant;
-        if(product != null){
-         product.variants = [...product.variants, {...newVariant as ProductVariant}]
-         console.log(product.variants)
-         setProducts([...products, {...product}])
-        }
+        return;
       }
   
       // Update the job with the new product
@@ -391,8 +406,7 @@ const JobList: React.FC<JobListProps> = ({
                       {job.products.map(jp => {
                         const product = products.find(p => p.id === jp.productId);
                         const variant = product?.variants.find(v => v.id === jp.variantId);
-                        console.log(jp)
-                        console.log(product)
+                        
                         const hasQualityCheck = !!jp.qualityCheck;
                         const passed = jp.qualityCheck?.passed || 0;
                         const failed = jp.qualityCheck?.failed || 0;
