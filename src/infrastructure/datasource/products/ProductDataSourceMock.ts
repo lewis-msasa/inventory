@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import type { CreateOrUpdateProductResponse, ProductDataSource, ProductsQueryParams, ProductsResponse } from "../../../domain/data/products/ProductDataSource";
-import type { Product } from "../../../domain/models/product";
+import type { Product, ProductVariant } from "../../../domain/models/product";
 
 @injectable()
 export class ProductDataSourceMock implements ProductDataSource{
@@ -8,6 +8,7 @@ export class ProductDataSourceMock implements ProductDataSource{
     constructor(){
            this.initMockProducts()
     }
+  
     private initMockProducts() {
     const brands = ['Nike', 'Adidas', 'Hoka', 'Saucony', 'Brooks', 'Asics', 'New Balance', 'Puma', 'Under Armour', 'Reebok'];
     const categories = ['Shoe', 'Apparel', 'Accessory', 'Equipment'];
@@ -127,6 +128,14 @@ export class ProductDataSourceMock implements ProductDataSource{
             this.mockProducts.unshift(newProduct);
             return {product: newProduct, successful: true};
     }
+   async createVariant(productId: string, variant: ProductVariant): Promise<CreateOrUpdateProductResponse> {
+       await new Promise(resolve => setTimeout(resolve, 500));
+        const index = this.mockProducts.findIndex(p => p.id === productId);
+        if (index === -1) throw new Error('Product not found');
+        
+        this.mockProducts[index] = { ...this.mockProducts[index], variants: [...this.mockProducts[index].variants, {...variant, id: Date.now().toString()}] };
+        return {product: this.mockProducts[index], successful: true};
+  }
     async updateProduct(id: string, updates: Partial<Product>): Promise<CreateOrUpdateProductResponse> {
        await new Promise(resolve => setTimeout(resolve, 500));
         const index = this.mockProducts.findIndex(p => p.id === id);

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import type { Job, Product, JobProduct, Subtask, Transaction, InventoryItem, DamagedItem } from '../../../types';
 import JobList from '../components/JobList';
 import { dummyInventory, dummyJobs, dummyProducts } from '../../../data/dummyData';
+import { productRepository } from '../../../main';
+import { useProductController } from '../../products/hooks/useProductController';
 
 interface JobListPageProps {
   
@@ -12,9 +14,17 @@ interface JobListPageProps {
 const JobListPage: React.FC<JobListPageProps> = ({ 
 }) => {
 
+
+    const {
+        loading,
+        successful,
+        error,
+        createProduct,
+        updateProduct
+      } = useProductController({}, productRepository);
+
       const [jobs, setJobs] = useState<Job[]>(dummyJobs);
       const [inventory, setInventory] = useState<InventoryItem[]>(dummyInventory);
-      const [products, setProducts] = useState<Product[]>(dummyProducts);
 
       const addToInventoryFromJob = async (
         jobProduct: JobProduct, 
@@ -98,8 +108,12 @@ const JobListPage: React.FC<JobListPageProps> = ({
     <JobList 
         jobs={jobs} 
         setJobs={setJobs}
-        products={products}
-        setProducts={setProducts}
+        callResult={{
+            loading : loading,
+            successful: successful
+        }}
+        createProduct={createProduct}
+        updateProduct={updateProduct}
         onAddToInventory={addToInventoryFromJob}
         onDiscardItems={onDiscardItems}
     />

@@ -22,6 +22,7 @@ export interface Expense {
 export interface JobProduct {
   id: string;
   productId?: string;
+  product?: Product;
   newProduct?: Omit<Product, 'id'>;
   variantId?: string;
   newVariant?: Omit<ProductVariant, 'id'>;

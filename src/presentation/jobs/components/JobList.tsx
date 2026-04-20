@@ -1,5 +1,5 @@
 // src/components/JobList.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import type { Job, Subtask, Expense, JobProduct, Product, ProductVariant } from '../../../types';
 import AddProductToJobModal from '../sections/AddProductToJobModal';
 import QualityAssessmentModal from '../sections/QualityAssessmentModal';
@@ -7,8 +7,12 @@ import QualityAssessmentModal from '../sections/QualityAssessmentModal';
 interface JobListProps {
   jobs: Job[];
   setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
-  products: Product[];
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  createProduct: (product: Omit<Product,"id">) => Promise<{successful: boolean, product: Product}>,
+  updateProduct: (product: Product) => Promise<{successful: boolean, product: Product}>,
+  callResult: {
+     successful: boolean,
+     loading: boolean,
+  }
   onAddToInventory: (jobProduct: JobProduct, batchNumber: string, warehouse: string, passedQuantity: number) => Promise<void>;
   onDiscardItems: (jobProduct: JobProduct, batchNumber: string, failedQuantity: number, reason: string) => Promise<void>;
 
@@ -16,9 +20,9 @@ interface JobListProps {
 
 const JobList: React.FC<JobListProps> = ({  
   jobs, 
-  setJobs, 
-  products, 
-  setProducts,
+  setJobs,  
+  createProduct,
+  updateProduct,
   onAddToInventory,
   onDiscardItems
  }) => {
@@ -42,6 +46,8 @@ const JobList: React.FC<JobListProps> = ({
   const [expenseDescription, setExpenseDescription] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [warehouse, setWarehouse] = useState('Main Warehouse');
+
+  
 
   const addNewJob = () => {
     if (!newJobName.trim()) return;
@@ -145,33 +151,26 @@ const JobList: React.FC<JobListProps> = ({
         ...jobProduct
       };
       //case 1: exisiting product, existing variant
-      if(jobProduct.productId && jobProduct.variantId){
-        const product = products.find(p => p.id == jobProduct.productId);
-        if(!product) return;
-        const variant = product.variants.find(v => v.id == jobProduct.variantId)
-        if(!variant) return;
-        newJobProduct.productId = product?.id;
-        newJobProduct.variantId = variant.id;
+      if(jobProduct.productId && jobProduct.variantId && jobProduct.product){
+        newJobProduct.productId = jobProduct.productId;
+        newJobProduct.product = jobProduct.product;
+        newJobProduct.variantId = jobProduct.variantId;
         delete newJobProduct.newProduct;
         delete newJobProduct.newVariant;
 
       }
       //case 2: existing product, new variant
-      else if(jobProduct.productId && jobProduct.newVariant){
-         const product = products.find(p => p.id == jobProduct.productId);
-         if(!product) return;
+      else if(jobProduct.productId && jobProduct.newVariant && jobProduct.product){
+        
          const newVariant = {
-            ...jobProduct.newVariant,
-            id: Date.now().toString()
+            ...jobProduct.newVariant
           };
-          newJobProduct.productId = product?.id;
-          newJobProduct.variantId = newVariant.id;
+          newJobProduct.productId = jobProduct.productId;
+          newJobProduct.product = jobProduct.product;
           delete newJobProduct.newProduct;
           delete newJobProduct.newVariant;
-          product.variants = [...product.variants, {...newVariant as ProductVariant}]
-          setProducts([...products, {...product}])
-
-          //we need to save the variant into the database
+          jobProduct.product.variants = [...jobProduct.product.variants, {...newVariant as ProductVariant}]
+          const result = await updateProduct(jobProduct.product)
         
       }
       //case 3: new product, new variant
@@ -186,19 +185,18 @@ const JobList: React.FC<JobListProps> = ({
           };
           
           const updatedVariants = [...jobProduct.newProduct.variants, newVariant];
-          // save variant in the DB
-          
-          // Update the job product with the new IDs
-          newJobProduct.productId = jobProduct.newProduct.name;
-          newJobProduct.variantId = newVariant.id;
+
           delete newJobProduct.newProduct;
           delete newJobProduct.newVariant;
-          
-          // Refresh products list
-          //const updatedProducts = await productApi.getProducts({ page: 1, limit: 100 });
-          //setProducts(updatedProducts.products);
-          if(newJobProduct.newProduct != null && newJobProduct.newProduct != undefined){
-           setProducts([...products, {...newJobProduct.newProduct as Product}])
+          jobProduct.newProduct.variants.push(newVariant);
+          if(jobProduct.newProduct != null && jobProduct.newProduct != undefined){
+            const result = await createProduct(jobProduct.newProduct as Product)
+            if(result.successful){
+               newJobProduct.productId = result.product.id;
+               newJobProduct.product = result.product;
+               const variant = result.product.variants.find(v => v.sku == newVariant.sku);
+               if(variant) newJobProduct.variantId = variant.id;
+            }
           }
         } catch (error) {
           console.error('Failed to create product:', error);
@@ -218,10 +216,7 @@ const JobList: React.FC<JobListProps> = ({
         } : j
       ));
     };
-
-  
-
-      // Function to perform quality assessment
+  // Function to perform quality assessment
   const performQualityAssessment = async (
     jobProductId: string, 
     passed: number, 
@@ -404,7 +399,8 @@ const JobList: React.FC<JobListProps> = ({
                     </thead>
                     <tbody>
                       {job.products.map(jp => {
-                        const product = products.find(p => p.id === jp.productId);
+                        const product = jp.product;
+                        console.log(product)
                         const variant = product?.variants.find(v => v.id === jp.variantId);
                         
                         const hasQualityCheck = !!jp.qualityCheck;
@@ -579,7 +575,6 @@ const JobList: React.FC<JobListProps> = ({
         isOpen={showAddProductModal}
         onClose={() => setShowAddProductModal(false)}
         onAddProduct={addProductToJob}
-        existingProducts={products}
       />
 
       {/* Add Job Modal */}

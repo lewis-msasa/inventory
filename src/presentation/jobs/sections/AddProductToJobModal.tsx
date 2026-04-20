@@ -3,29 +3,30 @@ import React, { useState, useEffect } from 'react';
 import type { JobProduct, Product, ProductVariant } from '../../../types';
 import Modal from '../../common/components/Modal';
 import { dummyCategories } from '../../../data/dummyData';
+import ProductSelectorModal from './ProductSelectorModal';
 
 
 interface AddProductToJobModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddProduct: (jobProduct: Omit<JobProduct, 'id'>) => void;
-  existingProducts: Product[];
 }
 
 const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
   isOpen,
   onClose,
-  onAddProduct,
-  existingProducts
+  onAddProduct
 }) => {
   const [productType, setProductType] = useState<'existing' | 'new'>('existing');
   const [selectedProductId, setSelectedProductId] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState('');
   const [quantity, setQuantity] = useState(1);
   const [cost, setCost] = useState(0.00);
   const [retailCost, setRetailCost] = useState(0.00);
   const [addNewVariant, setAddNewVariant] = useState(false);
   const [notes, setNotes] = useState('');
+  const [showProductSelector, setShowProductSelector] = useState(false);
 
 
   const resetState = () => {
@@ -49,8 +50,8 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
     size: '',
     color: '',
     sku: '',
-    costPrice: '',
-    retailPrice: '',
+    costPrice: 0.00,
+    retailPrice: 0.00,
     barcode: ''
   });
 
@@ -58,12 +59,12 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
 
   // Load variants when product is selected
   useEffect(() => {
-    if (selectedProductId) {
-      const product = existingProducts.find(p => p.id === selectedProductId);
-      setVariants(product?.variants || []);
+    if (selectedProduct) {
+      setVariants(selectedProduct.variants || []);
       setSelectedVariantId('');
     }
-  }, [selectedProductId, existingProducts]);
+  }, [selectedProduct]);
+  useEffect
 
   const handleSubmit = () => {
     if (productType === 'existing') {
@@ -76,12 +77,13 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
 
             onAddProduct({
                 productId: selectedProductId,
+                product: selectedProduct!,
                 newVariant: {
                 size: newProductForm.size,
                 color: newProductForm.color,
                 sku: newProductForm.sku,
-                costPrice: parseFloat(newProductForm.costPrice) || 0,
-                retailPrice: parseFloat(newProductForm.retailPrice) || 0,
+                costPrice: newProductForm.costPrice || 0,
+                retailPrice: newProductForm.retailPrice || 0,
                 barcode: newProductForm.barcode || `BAR-${Date.now()}`,
                 inventoryItems: []
                 },
@@ -96,6 +98,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
         
             onAddProduct({
                 productId: selectedProductId,
+                product: selectedProduct!,
                 variantId: selectedVariantId,
                 quantity,
                 variantCost: cost,
@@ -130,8 +133,8 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
           size: newProductForm.size,
           color: newProductForm.color,
           sku: newProductForm.sku,
-          costPrice: parseFloat(newProductForm.costPrice) || 0,
-          retailPrice: parseFloat(newProductForm.retailPrice) || 0,
+          costPrice: newProductForm.costPrice || 0,
+          retailPrice: newProductForm.retailPrice || 0,
           barcode: newProductForm.barcode || `BAR-${Date.now()}`,
           inventoryItems: []
         },
@@ -151,6 +154,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
   const resetForm = () => {
     setProductType('existing');
     setSelectedProductId('');
+    setSelectedProduct(null);
     setSelectedVariantId('');
     setQuantity(1);
     setNotes('');
@@ -163,13 +167,20 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
       size: '',
       color: '',
       sku: '',
-      costPrice: '',
-      retailPrice: '',
+      costPrice: 0.00,
+      retailPrice: 0.00,
       barcode: ''
     });
   };
 
   if (!isOpen) return null;
+
+  const handleSelectExistingProduct = (product: Product) => {
+    setSelectedProductId(product.id);
+    setSelectedProduct(product)
+    setShowProductSelector(false);
+    //onClose();
+  };
 
   return (
     
@@ -210,26 +221,18 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
             // Existing Product Form
             <div className="space-y-4">
                 <div className='flex-col'>
-                    <div className='mb-8'>
-                        <div className=" pt-4 col-span-2">
-                         <h4 className="font-medium text-gray-800 mb-3">Product Details</h4>
-                       </div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Select Product <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                        value={selectedProductId}
-                        onChange={(e) => setSelectedProductId(e.target.value)}
-                        className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
+                  {(selectedProduct) && <div className='pt-12'><p className='font-medium'>Selected Product: {selectedProduct.name}</p></div>}
+                  {(!selectedProduct) && <div className="text-center py-12">
+                        <a href='#'
+                        onClick={() => setShowProductSelector(true)}
+                        className="text-indigo-600 hover:text-indigo-700 cursor-pointer"
                         >
-                        <option value="">Choose a product...</option>
-                        {existingProducts.map(product => (
-                            <option key={product.id} value={product.id}>
-                            {product.name || `${product.brand} ${product.model}`}
-                            </option>
-                        ))}
-                        </select>
-                    </div>
+                        Browse Products
+                        </a>
+                        <p className="text-sm text-gray-500 mt-3">
+                        Search through products in your catalog
+                        </p>
+                    </div>}
                    {(selectedProductId) && (
                     <div className='mt-12'>
                         <div className=" pt-4 col-span-2">
@@ -340,7 +343,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                                 <input
                                     type="number"
                                     value={newProductForm.costPrice}
-                                    onChange={(e) => setCost(parseFloat(e.target.value))}
+                                    onChange={(e) => setNewProductForm({ ...newProductForm, costPrice: Number(e.target.value) })}
                                     className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="0.00"
                                     step="0.01"
@@ -354,7 +357,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                                 <input
                                     type="number"
                                     value={newProductForm.retailPrice}
-                                    onChange={(e) => setRetailCost(parseFloat(e.target.value))}
+                                    onChange={(e) => setNewProductForm({ ...newProductForm, retailPrice: Number(e.target.value) })} 
                                     className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
                                     placeholder="0.00"
                                     step="0.01"
@@ -539,7 +542,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                     <input
                         type="number"
                         value={newProductForm.costPrice}
-                        onChange={(e) => setNewProductForm({ ...newProductForm, costPrice: e.target.value })}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, costPrice: Number(e.target.value) })}
                         className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="0.00"
                         step="0.01"
@@ -553,7 +556,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
                     <input
                         type="number"
                         value={newProductForm.retailPrice}
-                        onChange={(e) => setNewProductForm({ ...newProductForm, retailPrice: e.target.value })}
+                        onChange={(e) => setNewProductForm({ ...newProductForm, retailPrice: Number(e.target.value) })}
                         className="w-full border rounded-md p-2 focus:ring-indigo-500 focus:border-indigo-500"
                         placeholder="0.00"
                         step="0.01"
@@ -610,6 +613,15 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
             </button>
           </div>
         </div>
+
+
+           {/* Product Selector Modal */}
+            <ProductSelectorModal
+                isOpen={showProductSelector}
+                onClose={() => setShowProductSelector(false)}
+                onSelectProduct={handleSelectExistingProduct}
+            />
+
       </Modal>
         
   );

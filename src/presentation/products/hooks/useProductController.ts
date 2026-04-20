@@ -17,19 +17,19 @@ interface UseProductsOptions {
   enableInfiniteScroll?: boolean;
 }
 
-interface UseProductsReturn {
-  products: Product[];
-  loading: boolean;
-  error: string | null;
-  hasMore: boolean;
-  total: number;
-  page: number;
-  totalPages: number;
-  loadMore: () => void;
-  refresh: () => void;
-  updateFilters: (filters: Partial<Omit<UseProductsOptions, 'initialPage' | 'limit' | 'enableInfiniteScroll'>>) => void;
-  isFetching: boolean;
-}
+// interface UseProductsReturn {
+//   products: Product[];
+//   loading: boolean;
+//   error: string | null;
+//   hasMore: boolean;
+//   total: number;
+//   page: number;
+//   totalPages: number;
+//   loadMore: () => void;
+//   refresh: () => void;
+//   updateFilters: (filters: Partial<Omit<UseProductsOptions, 'initialPage' | 'limit' | 'enableInfiniteScroll'>>) => void;
+//   isFetching: boolean;
+// }
 
 export const useProductController = (options: UseProductsOptions = {}, repo: ProductRepository) => {
   const {
@@ -45,6 +45,7 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
   } = options;
  
   const [products, setProducts] = useState<Product[]>([]);
+  const [updatedProduct, setUpdatedProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -148,9 +149,32 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
   }, [fetchProducts]);
   const createProduct = async (product: Omit<Product, 'id'>) => {
      try{
-     setFetchStatus(RequestStatus.Loading)
+     setLoading(true)
      const result = await repo.createProduct(product)
-     setFetchStatus(RequestStatus.Success)
+     if(result.successful){
+        setUpdatedProduct(result.product!);
+        return {successful: true, product: result.product!}
+     }
+     setSuccess(result.successful)
+     }
+    catch(err : any){
+         
+         console.log(err)
+       
+    }
+    setLoading(false)
+    return {successful: false, product: {} as Product}
+
+  }
+  const updateProduct = async (product: Product) => {
+     try{
+     setLoading(true)
+     const result = await repo.updateProduct(product.id, product)
+     setLoading(false)
+     if(result.successful){
+        setUpdatedProduct(result.product!);
+        return {successful: true, product: result.product!}
+     }
      setSuccess(result.successful)
      }
     catch(err : any){
@@ -158,6 +182,7 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
          console.log(err)
          setFetchStatus(RequestStatus.Error)
     }
+    return {successful: false, product: {} as Product}
     
 
   }
@@ -168,7 +193,9 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
       tags: string[];
     }>({ categories: [], brands: [], tags: [] });
   const getFilterOptions = async () => {
+
     var response = await repo.getFilterOptions();
+    console.log(response)
     setFilterOptions(response)
   }
   return {
@@ -187,6 +214,8 @@ export const useProductController = (options: UseProductsOptions = {}, repo: Pro
     successful,
     getFilterOptions,
     filterOptions,
-    createProduct
+    createProduct,
+    updateProduct,
+    updatedProduct
   };
 };

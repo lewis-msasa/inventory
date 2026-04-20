@@ -1,16 +1,19 @@
 import { injectable } from "inversify";
-import type { ProductDataSource, ProductsQueryParams, ProductsResponse } from "../../../domain/data/products/ProductDataSource";
-import type { Product } from "../../../domain/models/product";
+import type { CreateOrUpdateProductResponse, ProductDataSource, ProductsQueryParams, ProductsResponse } from "../../../domain/data/products/ProductDataSource";
+import type { Product, ProductVariant } from "../../../domain/models/product";
 
 @injectable()
 export class ProductDataSourceImpl implements ProductDataSource{
+    createVariant(productId: string, variant: ProductVariant): Promise<CreateOrUpdateProductResponse> {
+        throw new Error("Method not implemented.");
+    }
     getProducts(params: ProductsQueryParams): Promise<ProductsResponse> {
         throw new Error("Method not implemented.");
     }
-    createProduct(product: Omit<Product, "id">): Promise<Product> {
+    createProduct(product: Omit<Product, "id">): Promise<CreateOrUpdateProductResponse> {
         throw new Error("Method not implemented.");
     }
-    updateProduct(id: string, updates: Partial<Product>): Promise<Product> {
+    updateProduct(id: string, updates: Partial<Product>): Promise<CreateOrUpdateProductResponse> {
         throw new Error("Method not implemented.");
     }
     deleteProduct(id: string): Promise<void> {
