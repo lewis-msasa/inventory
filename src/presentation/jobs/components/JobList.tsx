@@ -1,12 +1,13 @@
 // src/components/JobList.tsx
-import React, { useEffect, useState } from 'react';
-import type { Job, Subtask, Expense, JobProduct, Product, ProductVariant } from '../../../types';
+import React, { useEffect, useRef, useState } from 'react';
 import AddProductToJobModal from '../sections/AddProductToJobModal';
 import QualityAssessmentModal from '../sections/QualityAssessmentModal';
+import type { Product, ProductVariant } from '../../../domain/models/product';
+import type { Expense, Job, JobProduct, Subtask } from '../../../domain/models/job';
+import { useJobController } from '../hooks/useJobController';
+import { jobRepository } from '../../../main';
 
 interface JobListProps {
-  jobs: Job[];
-  setJobs: React.Dispatch<React.SetStateAction<Job[]>>;
   createProduct: (product: Omit<Product,"id">) => Promise<{successful: boolean, product: Product}>,
   updateProduct: (product: Product) => Promise<{successful: boolean, product: Product}>,
   callResult: {
@@ -18,9 +19,7 @@ interface JobListProps {
 
 }
 
-const JobList: React.FC<JobListProps> = ({  
-  jobs, 
-  setJobs,  
+const JobList: React.FC<JobListProps> = ({ 
   createProduct,
   updateProduct,
   onAddToInventory,
@@ -47,6 +46,73 @@ const JobList: React.FC<JobListProps> = ({
   const [expenseAmount, setExpenseAmount] = useState('');
   const [warehouse, setWarehouse] = useState('Main Warehouse');
 
+
+  
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'status' | 'completed_at' | 'created_at'>('status');
+
+
+
+  
+    // Use the custom hook for data fetching
+    const {
+      jobs,
+      loading,
+      error,
+      hasMore,
+      total,
+      loadMore,
+      refresh,
+      isFetching,
+      filterOptions,
+      getFilterOptions,
+    } = useJobController({
+      search: searchTerm,
+      status: selectedStatus,
+      sortBy: sortBy,
+      limit: 10,
+      enableInfiniteScroll: true
+    }, jobRepository);
+  
+    // Intersection Observer for infinite scroll
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const lastProductRef = useRef<HTMLDivElement | null>(null);
+  
+    // Load filter options on mount
+    useEffect(() => {
+       getFilterOptions()
+    }, []);
+  
+    // Set up intersection observer for infinite scroll
+    useEffect(() => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+      
+      observerRef.current = new IntersectionObserver(entries => {
+        if (entries[0].isIntersecting && hasMore && !loading && !isFetching) {
+          loadMore();
+        }
+      }, { threshold: 0.1 });
+      
+      if (lastProductRef.current) {
+        observerRef.current.observe(lastProductRef.current);
+      }
+      
+      return () => {
+        if (observerRef.current) {
+          observerRef.current.disconnect();
+        }
+      };
+    }, [jobs, hasMore, loading, isFetching, loadMore]);
+
+
+    const clearFilters = () => {
+    setSearchTerm('');
+    setSelectedStatus('all');
+  };
+
   
 
   const addNewJob = () => {
@@ -61,7 +127,7 @@ const JobList: React.FC<JobListProps> = ({
       products: [],
       subtasks: []
     };
-    setJobs([...jobs, newJob]);
+    //setJobs([...jobs, newJob]);
     setNewJobName('');
     setShowAddJobModal(false);
   };
@@ -76,12 +142,12 @@ const JobList: React.FC<JobListProps> = ({
       expenses: []
     };
     
-    setJobs(jobs.map(job => 
-      job.id === currentJobId ? {
-        ...job,
-        subtasks: [...job.subtasks, newSubtask]
-      } : job
-    ));
+    // setJobs(jobs.map(job => 
+    //   job.id === currentJobId ? {
+    //     ...job,
+    //     subtasks: [...job.subtasks, newSubtask]
+    //   } : job
+    // ));
     
     setNewSubtaskName('');
     setShowAddSubtaskModal(false);
@@ -98,17 +164,17 @@ const JobList: React.FC<JobListProps> = ({
       date: new Date()
     };
     
-    setJobs(jobs.map(job => 
-      job.id === currentJobId ? {
-        ...job,
-        subtasks: job.subtasks.map(subtask =>
-          subtask.id === currentSubtaskId ? {
-            ...subtask,
-            expenses: [...subtask.expenses, expense]
-          } : subtask
-        )
-      } : job
-    ));
+    // setJobs(jobs.map(job => 
+    //   job.id === currentJobId ? {
+    //     ...job,
+    //     subtasks: job.subtasks.map(subtask =>
+    //       subtask.id === currentSubtaskId ? {
+    //         ...subtask,
+    //         expenses: [...subtask.expenses, expense]
+    //       } : subtask
+    //     )
+    //   } : job
+    // ));
     
     setExpenseDescription('');
     setExpenseAmount('');
@@ -118,20 +184,20 @@ const JobList: React.FC<JobListProps> = ({
   };
 
   const updateJobStatus = (jobId: string, status: Job['status']) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId ? { ...job, status, completedAt: status === 'completed' ? new Date() : job.completedAt } : job
-    ));
+    // setJobs(jobs.map(job => 
+    //   job.id === jobId ? { ...job, status, completedAt: status === 'completed' ? new Date() : job.completedAt } : job
+    // ));
   };
 
   const updateSubtaskStatus = (jobId: string, subtaskId: string, status: Subtask['status']) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId ? {
-        ...job,
-        subtasks: job.subtasks.map(subtask =>
-          subtask.id === subtaskId ? { ...subtask, status } : subtask
-        )
-      } : job
-    ));
+    // setJobs(jobs.map(job => 
+    //   job.id === jobId ? {
+    //     ...job,
+    //     subtasks: job.subtasks.map(subtask =>
+    //       subtask.id === subtaskId ? { ...subtask, status } : subtask
+    //     )
+    //   } : job
+    // ));
   };
 
   const getTotalExpenses = (job: Job) => {
@@ -209,12 +275,12 @@ const JobList: React.FC<JobListProps> = ({
       }
   
       // Update the job with the new product
-      setJobs(jobs.map(j => 
-        j.id === currentJobId ? {
-          ...j,
-          products: [...j.products, newJobProduct]
-        } : j
-      ));
+      // setJobs(jobs.map(j => 
+      //   j.id === currentJobId ? {
+      //     ...j,
+      //     products: [...j.products, newJobProduct]
+      //   } : j
+      // ));
     };
   // Function to perform quality assessment
   const performQualityAssessment = async (
@@ -239,24 +305,24 @@ const JobList: React.FC<JobListProps> = ({
     if (!targetJob || !targetProduct) return;
     
     // Update the job product with quality check results
-    setJobs(jobs.map(job => 
-      job.id === targetJob!.id ? {
-        ...job,
-        products: job.products.map(product =>
-          product.id === jobProductId ? {
-            ...product,
-            qualityCheck: {
-              passed,
-              failed,
-              notes,
-              checkedAt: new Date(),
-              checkedBy: 'Current User' // You can replace with actual user
-            },
-            status: passed > 0 ? 'in_inventory' : 'damaged'
-          } : product
-        )
-      } : job
-    ));
+    // setJobs(jobs.map(job => 
+    //   job.id === targetJob!.id ? {
+    //     ...job,
+    //     products: job.products.map(product =>
+    //       product.id === jobProductId ? {
+    //         ...product,
+    //         qualityCheck: {
+    //           passed,
+    //           failed,
+    //           notes,
+    //           checkedAt: new Date(),
+    //           checkedBy: 'Current User' // You can replace with actual user
+    //         },
+    //         status: passed > 0 ? 'in_inventory' : 'damaged'
+    //       } : product
+    //     )
+    //   } : job
+    // ));
     
     // If the job is completed, automatically add to inventory and discard
     if (targetJob.status === 'completed') {
@@ -317,7 +383,7 @@ const JobList: React.FC<JobListProps> = ({
   return (
     <div className="bg-white rounded-lg shadow">
       <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center mb-2">
           <h2 className="text-2xl font-bold text-gray-800">Jobs</h2>
           <button
             onClick={() => setShowAddJobModal(true)}
@@ -326,6 +392,92 @@ const JobList: React.FC<JobListProps> = ({
             Create New Job
           </button>
         </div>
+
+          {/* Search and Filters Bar */}
+          <div className="space-y-4">
+            {/* Search */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search products by batch number, status..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full border rounded-md pl-10 pr-4 py-2 focus:ring-indigo-500 focus:border-indigo-500"
+              />
+              <svg
+                className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+
+            {/* Filter Chips */}
+            <div className="flex flex-wrap gap-4 items-center">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">Status:</span>
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                  className="border rounded-md px-3 py-1 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="all">Status</option>
+                  {filterOptions.status.map(status => (
+                    <option key={status} value={status}>{status}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-medium text-gray-700">Sort by:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="border rounded-md px-3 py-1 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                >
+                  <option value="status">Status</option>
+                  <option value="created_at">Created At</option>
+                  <option value="completed_at">Completed At</option>
+                </select>
+              </div>
+
+              {(searchTerm || selectedStatus !== 'all') && (
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-red-600 hover:text-red-800"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
+
+            {/* Active Filters Display */}
+            <div className="flex flex-wrap gap-2">
+              {searchTerm && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-800">
+                  Search: {searchTerm}
+                  <button onClick={() => setSearchTerm('')} className="ml-1 hover:text-blue-600">×</button>
+                </span>
+              )}
+              {selectedStatus !== 'all' && (
+                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                  Status: {selectedStatus}
+                  <button onClick={() => setSelectedStatus('all')} className="ml-1 hover:text-green-600">×</button>
+                </span>
+              )}
+            </div>
+          </div>
+
+
+
+
       </div>
 
       <div className="divide-y divide-gray-200">
@@ -553,6 +705,33 @@ const JobList: React.FC<JobListProps> = ({
 
           </div>
         ))}
+        {/* Loading indicator */}
+        {(loading || isFetching) && (
+          <div className="p-8 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <p className="mt-2 text-gray-500">Loading Jobs...</p>
+          </div>
+        )}
+        
+        {/* No more products message */}
+        {!hasMore && jobs.length > 0 && (
+          <div className="p-8 text-center text-gray-500">
+            No more Jobs to load ({total} total)
+          </div>
+        )}
+        
+        {/* Empty state */}
+        {!loading && jobs.length === 0 && (
+          <div className="p-12 text-center">
+            <p className="text-gray-500 mb-4">No Jobs found matching your criteria</p>
+            <button
+              onClick={clearFilters}
+              className="text-indigo-600 hover:text-indigo-800"
+            >
+              Clear all filters
+            </button>
+          </div>
+        )}
       </div>
 
        {/* Quality Assessment Modal */}

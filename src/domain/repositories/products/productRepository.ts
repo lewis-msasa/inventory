@@ -1,6 +1,6 @@
-import type { Product } from "../../../types"
+
 import type { CreateOrUpdateProductResponse, ProductsQueryParams, ProductsResponse } from "../../data/products/ProductDataSource"
-import type { ProductVariant } from "../../models/product"
+import type { Product, ProductVariant } from "../../models/product"
 
 export interface ProductRepository{
     

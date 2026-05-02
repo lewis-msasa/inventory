@@ -2,8 +2,7 @@ import { inject, injectable } from "inversify";
 import { TYPES } from "../../../di/types";
 import type { CreateOrUpdateProductResponse, ProductDataSource, ProductsQueryParams, ProductsResponse } from "../../../domain/data/products/ProductDataSource";
 import type { ProductRepository } from "../../../domain/repositories/products/productRepository";
-import type { Product } from "../../../types";
-import type { ProductVariant } from "../../../domain/models/product";
+import type { Product, ProductVariant } from "../../../domain/models/product";
 
 
 @injectable()

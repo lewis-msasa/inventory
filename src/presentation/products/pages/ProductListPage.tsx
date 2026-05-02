@@ -281,6 +281,7 @@ const [newProductForm, setNewProductForm] = useState({
     <div className="bg-white rounded-lg shadow">
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
+        {/* Add product*/}
         <div className="flex justify-between items-center mb-4">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">Products</h2>

@@ -1,6 +1,8 @@
 // src/data/dummyData.ts
 
-import type { Job, Product, InventoryItem, Transaction, ProductCategory } from "../types";
+import type { Job } from "../domain/models/job";
+import type { InventoryItem, Product, ProductCategory } from "../domain/models/product";
+import type {  Transaction, } from "../types";
 
 
 

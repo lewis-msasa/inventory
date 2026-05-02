@@ -33,6 +33,7 @@ const AddProductToJobModal: React.FC<AddProductToJobModalProps> = ({
       setProductType('existing');
       setSelectedProductId('');
       setSelectedVariantId('');
+      setSelectedProduct(null);
       setQuantity(1);
       setAddNewVariant(false);
       setNotes('');

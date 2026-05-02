@@ -1,11 +1,12 @@
 // src/components/JobList.tsx - Add product handling
 
 import React, { useState } from 'react';
-import type { Job, Product, JobProduct, Subtask, Transaction, InventoryItem, DamagedItem } from '../../../types';
 import JobList from '../components/JobList';
-import { dummyInventory, dummyJobs, dummyProducts } from '../../../data/dummyData';
+import { dummyInventory, dummyJobs} from '../../../data/dummyData';
 import { productRepository } from '../../../main';
 import { useProductController } from '../../products/hooks/useProductController';
+import type { Job, JobProduct, DamagedItem } from '../../../domain/models/job';
+import type { InventoryItem } from '../../../domain/models/product';
 
 interface JobListPageProps {
   
@@ -23,7 +24,6 @@ const JobListPage: React.FC<JobListPageProps> = ({
         updateProduct
       } = useProductController({}, productRepository);
 
-      const [jobs, setJobs] = useState<Job[]>(dummyJobs);
       const [inventory, setInventory] = useState<InventoryItem[]>(dummyInventory);
 
       const addToInventoryFromJob = async (
@@ -106,8 +106,6 @@ const JobListPage: React.FC<JobListPageProps> = ({
 
   return (
     <JobList 
-        jobs={jobs} 
-        setJobs={setJobs}
         callResult={{
             loading : loading,
             successful: successful

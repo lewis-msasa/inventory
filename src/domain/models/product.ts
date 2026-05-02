@@ -1,3 +1,8 @@
+export interface ProductCategory{
+  id: string,
+  name: string;
+  value: string
+}
 export type Product =  {
   id: string;
   category: string;
